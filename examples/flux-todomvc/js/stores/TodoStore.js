@@ -121,56 +121,47 @@ var TodoStore = assign({}, EventEmitter.prototype, {
 // Register callback to handle all updates
 AppDispatcher.register(function(action) {
   var text;
+  var actions = {};
 
-  switch(action.actionType) {
-    case TodoConstants.TODO_CREATE:
-      text = action.text.trim();
-      if (text !== '') {
-        create(text);
-        TodoStore.emitChange();
-      }
-      break;
+  actions[TodoConstants.TODO_CREATE] = function () {
+    text = action.text.trim();
+    if (text !== '') {
+      create(text);
+    }
+  };
 
-    case TodoConstants.TODO_TOGGLE_COMPLETE_ALL:
-      if (TodoStore.areAllComplete()) {
-        updateAll({complete: false});
-      } else {
-        updateAll({complete: true});
-      }
-      TodoStore.emitChange();
-      break;
+  actions[TodoConstants.TODO_TOGGLE_COMPLETE_ALL] = function () {
+    const areAllComplete = TodoStore.areAllComplete();
+    updateAll({complete: !areAllComplete});
+  };
 
-    case TodoConstants.TODO_UNDO_COMPLETE:
-      update(action.id, {complete: false});
-      TodoStore.emitChange();
-      break;
+  actions[TodoConstants.TODO_UNDO_COMPLETE] = function () {
+    update(action.id, {complete: false});
+  };
 
-    case TodoConstants.TODO_COMPLETE:
-      update(action.id, {complete: true});
-      TodoStore.emitChange();
-      break;
+  actions[TodoConstants.TODO_COMPLETE] = function () {
+    update(action.id, {complete: true});
+  };
 
-    case TodoConstants.TODO_UPDATE_TEXT:
-      text = action.text.trim();
-      if (text !== '') {
-        update(action.id, {text: text});
-        TodoStore.emitChange();
-      }
-      break;
+  actions[TodoConstants.TODO_UPDATE_TEXT] = function () {
+    text = action.text.trim();
+    if (text !== '') {
+      update(action.id, {text: text});
+    }
+  };
 
-    case TodoConstants.TODO_DESTROY:
-      destroy(action.id);
-      TodoStore.emitChange();
-      break;
+  actions[TodoConstants.TODO_DESTROY] = function () {
+    destroy(action.id);
+  };
 
-    case TodoConstants.TODO_DESTROY_COMPLETED:
-      destroyCompleted();
-      TodoStore.emitChange();
-      break;
+  actions[TodoConstants.TODO_DESTROY_COMPLETED] = function () {
+    destroyCompleted();
+  };
 
-    default:
-      // no op
-  }
+  actions[action.actionType]();
+
+  TodoStore.emitChange();
+
 });
 
 module.exports = TodoStore;
